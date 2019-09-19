@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>    
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans-3.0.xsd 
+       http://www.springframework.org/schema/aop 
+       http://www.springframework.org/schema/aop/spring-aop-3.0.xsd 
+       http://www.springframework.org/schema/tx
+       http://www.springframework.org/schema/tx/spring-tx-3.1.xsd
+       http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context-4.2.xsd">
+           
+     <context:component-scan base-package="com.dayee">
+        <!--制定扫包规则，不扫描@Controller注解的JAVA类，其他的还是要扫描  -->
+         <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+     </context:component-scan>    
+     
+      <!-- 启动AOP支持 -->
+      <aop:aspectj-autoproxy/>
+               
+     <!-- 引入外部数据源配置信息 -->
+     <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+         <property name="locations">
+             <value>classpath:com/dayee/config/jdbc.properties</value>
+         </property>
+     </bean>
+     
+     <!-- 配置数据源 -->
+	<bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource"
+		init-method="init" destroy-method="close">
+		<property name="driverClassName" value="${jdbc.driver}"></property>
+		<property name="url" value="${jdbc.url}"></property>
+		<property name="username" value="${jdbc.username}"></property>
+		<property name="password" value="${jdbc.password}"></property>
+
+		<property name="initialSize" value="1" />
+		<property name="minIdle" value="1" />
+		<property name="maxActive" value="20" />
+
+		<!-- 配置获取连接等待超时的时间 -->
+		<property name="maxWait" value="60000" />
+
+		<!-- 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒 -->
+		<property name="timeBetweenEvictionRunsMillis" value="60000" />
+
+		<!-- 配置一个连接在池中最小生存的时间，单位是毫秒 -->
+		<property name="minEvictableIdleTimeMillis" value="300000" />
+
+		<property name="validationQuery" value="SELECT 'x'" />
+		<property name="testWhileIdle" value="true" />
+		<property name="testOnBorrow" value="false" />
+		<property name="testOnReturn" value="false" />
+
+		<!-- 打开PSCache，并且指定每个连接上PSCache的大小 -->
+		<property name="poolPreparedStatements" value="true" />
+		<property name="maxPoolPreparedStatementPerConnectionSize" value="20" />
+
+		<!-- 配置监控统计拦截的filters，去掉后监控界面sql无法统计 -->
+		<property name="filters" value="stat" />
+
+	</bean>
+     
+     <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+         <property name="dataSource" ref="dataSource"></property>
+         <!-- 加载mybatis.cfg.xml文件 -->
+         <property name="configLocation" value="classpath:com/dayee/config/mybatis.cfg.xml"></property>
+         <!-- 自动扫描需要定义类别名的包，将包内的JAVA类的类名作为类别名 -->
+         <property name="typeAliasesPackage" value="com.dayee.model"></property>
+         
+         <property name="mapperLocations" value="classpath:com/dayee/dao/**/*.xml" />  
+     </bean>
+    
+    <!-- 自动扫描所有的Mapper接口与文件 -->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+         <property name="basePackage" value="com.dayee.dao"></property>
+         <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>  
+    </bean>
+    
+     <!-- 配置事务管理器      -->
+     <bean id="txManager"
+         class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+         <property name="dataSource" ref="dataSource"></property>
+     </bean>
+     
+     <tx:annotation-driven transaction-manager="txManager"/>
+     
+     <import resource="task.xml"/>
+     
+</beans>

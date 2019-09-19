@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+http://www.springframework.org/schema/context   
+http://www.springframework.org/schema/context/spring-context-4.0.xsd
+http://www.springframework.org/schema/mvc   
+http://www.springframework.org/schema/mvc/spring-mvc-4.0.xsd">
+
+    <!-- 启动注解，注册服务，如验证框架、全局类型转换器-->
+    <mvc:annotation-driven conversion-service="conversionService"/>
+    
+    <!-- 启动自动扫描 -->
+    <context:component-scan base-package="com.dayee.controller">
+    
+    <!-- 制定扫包规则 ,只扫描使用@Controller注解的JAVA类 -->
+    <context:include-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+    </context:component-scan>
+   
+     <bean id="conversionService" class="org.springframework.format.support.FormattingConversionServiceFactoryBean">
+        <property name="converters">
+            <set>
+                <ref bean="dateConvert"/>
+            </set>
+        </property>
+    </bean>
+
+
+	<!--配置视图 -->
+	<bean id="jspView"
+		class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<property name="prefix" value="/views/jsp/" />
+		<property name="suffix" value=".jsp" />
+	</bean>
+	
+   <mvc:resources location="/static/" mapping="/static/**"/>  
+  
+
+	<!--使用fastjson作为json解析器 -->
+	<mvc:annotation-driven>
+		<mvc:message-converters register-defaults="true">
+			<bean
+				class="com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter">
+				<property name="supportedMediaTypes" value="application/json" />
+				<!--设置fastjson特性 -->
+				<property name="features">
+					<array>
+						<!--设置null值也要输出，fastjson默认是关闭的 -->
+						<value>WriteMapNullValue</value>
+						<!--设置使用文本方式输出日期，fastjson默认是long -->
+						<value>WriteDateUseDateFormat</value>
+					</array>
+				</property>
+			</bean>
+		</mvc:message-converters>
+	</mvc:annotation-driven> 
+    
+<!--配置拦截器, 多个拦截器,顺序执行 -->  
+<mvc:interceptors>    
+
+   <mvc:interceptor>    
+        <!-- 匹配的是url路径， 如果不配置或/**,将拦截所有的Controller -->  
+        <mvc:mapping path="/**"/>
+        <mvc:exclude-mapping path="/static/**" />
+        <bean class="com.dayee.interceptors.RequestLogInterceptor"></bean>    
+    </mvc:interceptor>  
+
+    <mvc:interceptor>    
+        <!-- 匹配的是url路径， 如果不配置或/**,将拦截所有的Controller -->  
+        <mvc:mapping path="/**"/>
+        <mvc:exclude-mapping path="/user/login/**" />
+        <mvc:exclude-mapping path="/interface/**" />
+        <mvc:exclude-mapping path="/recharge/*/*/audit/*" />
+        <mvc:exclude-mapping path="/static/**" />
+        <mvc:exclude-mapping path="/**/api/**"/>
+        <bean class="com.dayee.interceptors.LoginInterceptor"></bean>    
+    </mvc:interceptor>  
+    
+    <mvc:interceptor>    
+        <!-- 匹配的是url路径， 如果不配置或/**,将拦截所有的Controller -->  
+        <mvc:mapping path="/**"/>
+        <mvc:exclude-mapping path="/xiaojianren/**"/>
+        <mvc:exclude-mapping path="/user/**" />
+        <mvc:exclude-mapping path="/interface/**" />
+        <mvc:exclude-mapping path="/recharge/*/*/audit/*" />
+        <mvc:exclude-mapping path="/static/**" />
+        <mvc:exclude-mapping path="/**/api/**"/>
+        <bean class="com.dayee.interceptors.XiaoJianRenReviewInterceptor"></bean>    
+    </mvc:interceptor> 
+    
+    <mvc:interceptor>    
+        <!-- 匹配的是url路径， 如果不配置或/**,将拦截所有的Controller -->  
+        <mvc:mapping path="/**/api/**"/>
+        <bean class="com.dayee.interceptors.InterFacePermissionValidationInterceptor"></bean>    
+    </mvc:interceptor> 
+    
+</mvc:interceptors>
+</beans>

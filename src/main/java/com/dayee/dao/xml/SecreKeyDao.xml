@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org/DTD Mapper 3.0" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dayee.dao.SecreKeyDao">
+    
+     <update id="updateSecurityCodeByNotUse">
+              UPDATE t_security_code SET state='未使用' where companySystemId=#{id}
+    </update>
+    
+    <update id="updateSecurityCodeByUse">
+              UPDATE t_security_code SET state='已使用' where id=#{code}
+    </update>
+
+    
+</mapper>

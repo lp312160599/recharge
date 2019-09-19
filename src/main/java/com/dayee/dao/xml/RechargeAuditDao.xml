@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org/DTD Mapper 3.0" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dayee.dao.RechargeAuditDao">
+    
+    <select id="queryCommonlyUsed" resultType="RechargeAudit">
+         SELECT auditorEmail,auditor FROM t_recharge_audit GROUP BY auditorEmail,auditor LIMIT 0,5
+    </select>
+    
+    <select id="sumRechargeUnderReview" resultType="com.dayee.vo.RechargeFreezeInfo">
+          SELECT IFNULL(SUM(money),0) as money,IFNULL(SUM(fileSize),0) as fileSize,IFNULL(SUM(minute),0) as minute FROM t_recharge WHERE systemId = #{systemId}  AND TYPE='退款' AND state='审核中'
+    </select>
+    
+</mapper>

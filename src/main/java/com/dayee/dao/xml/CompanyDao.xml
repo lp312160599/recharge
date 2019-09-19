@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org/DTD Mapper 3.0" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dayee.dao.CompanyDao">
+    
+    <resultMap type="Company" id="companyList">
+           <id property="id" column="id"/>
+           <result column="name" property="name"/>
+           <collection property="system" column="id" ofType="CompanySystem">
+              <result column="sysName" property="name"/>
+              <result column="balance" property="balance"/>
+              <result column="duration" property="duration"/>
+              <result column="countMoney" property="countMoney"/>
+              <result column="systemId" property="systemId"/>
+              <result column="backgroundNumber" property="backgroundNumber"/>
+              <result column="xiaoJianRenIssuedMoney" property="xiaoJianRenIssuedMoney"/>
+              <result column="applyReward" property="applyReward"/>
+              <result column="serviceMoney" property="serviceMoney"/>
+              <result column="merchantRechargeMoney" property="merchantRechargeMoney"/>
+              <result column="merchantBalance" property="merchantBalance"/>
+           </collection>
+    </resultMap>
+    
+    <select id="selectCompany" resultMap="companyList">
+            SELECT c.id,c.name,s.companyId,s.name AS sysName,s.balance,s.duration,s.countMoney,s.systemId ,s.backgroundNumber,
+             s.xiaoJianRenIssuedMoney,s.applyReward,s.serviceMoney,s.merchantRechargeMoney,s.merchantBalance
+              FROM 
+              (SELECT * FROM t_company  
+              WHERE 1 = 1 
+              
+              <if test="companyName!=null">
+                 AND  name LIKE #{companyName} 
+               </if>
+              
+              
+               <if test="sysName==null and page!=null">
+                    LIMIT #{page.start},#{page.end}
+                </if>
+              ) c 
+              
+              LEFT JOIN (SELECT * FROM t_company_system 
+              
+              <if test="orderBy!=null">
+                    ORDER BY ${orderBy}
+              </if>
+              
+              ) s ON c.id=s.companyId
+               WHERE 1 = 1 
+               
+               
+               <if test="sysName!=null">
+                  AND s.name  LIKE #{sysName}  
+               </if>
+               
+                 
+               
+               <if test="sysName!=null and page!=null">
+                    LIMIT #{page.start},#{page.end}
+                </if>
+ 
+    </select>
+    
+    
+    <select id="getCompanyCount" resultType="int">
+     SELECT SUM(id) FROM (
+         SELECT COUNT(DISTINCT c.id) as id FROM t_company c LEFT JOIN t_company_system s ON c.id=s.companyId
+               WHERE 1 = 1 
+               <if test="companyName!=null">
+                  AND c.name LIKE #{companyName} 
+               </if>
+               <if test="sysName!=null">
+                  AND s.name  LIKE #{sysName}  
+               </if>
+               group by c.id
+    ) AS a
+    </select>
+    
+</mapper>

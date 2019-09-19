@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org/DTD Mapper 3.0" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dayee.dao.BaseDao">
+      
+      <insert id="addObject" useGeneratedKeys="true" keyProperty="id" parameterType="java.util.HashMap" >
+           INSERT INTO ${tableName} (${column}) VALUES(${values});
+           <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Integer"  >
+                  SELECT @@IDENTITY;
+           </selectKey>
+      </insert>
+      
+      <update id="updateObjectById">
+           UPDATE  ${tableName} SET ${values} WHERE id=#{id}
+      </update>
+      
+      <delete id="deleteObjectByIds">
+         DELETE FROM ${tableName} WHERE id IN
+           <foreach collection="list" index="index" item="item" open="(" separator="," close=")">
+                  #{item}
+           </foreach>
+      </delete>
+      
+      <select id="queryById" resultType="java.util.HashMap">
+          select * from  ${tableName} where id=#{id}
+      </select>
+      
+      <select id="queryByCondition" resultType="java.util.HashMap">
+          select * from  ${tableName} 
+          <if test="orderBy!=null">
+              ORDER BY ${orderBy} 
+          </if>
+          
+          where ${condition}
+      </select>
+      
+      <select id="queryByConditionCount" resultType="int">
+          select count(*) from  ${tableName} 
+          where ${condition} 
+          <if test="orderBy!=null">
+              ORDER BY ${orderBy} 
+          </if>
+      </select>
+      
+       <select id="queryByConditionAndPagination" resultType="java.util.HashMap">
+               select * from ${tableName} where ${condition}
+               <if test="orderBy!=null">
+                  ORDER BY ${orderBy} 
+               </if>
+               LIMIT #{pageNumber},#{pageSize}
+      </select>
+      
+      <insert id="insertRequestLog" parameterMap="requestLogParameterMap">
+             insert into t_request_log(str,ip,userId) value (#{str},#{ip},#{userId})
+      </insert>
+      
+      <parameterMap type="java.util.HashMap" id="requestLogParameterMap">
+                <parameter property="str" javaType="string"/>
+                <parameter property="ip" javaType="string"/>
+                <parameter property="userId" javaType="int"/>
+      </parameterMap>
+      
+</mapper>

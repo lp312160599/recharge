@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org/DTD Mapper 3.0" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dayee.dao.XiaoJianRenDao">
+    
+    <update id="updateStatusToAudited">
+        UPDATE t_xiao_jian_ren_consumption_log SET STATUS='已审核',statusNumber=0,issueDate=null WHERE 
+         id IN 
+          <foreach collection="ids" index="index" item="item" open="("
+          separator="," close=")">
+           #{item}
+        </foreach>
+        and issueDate> NOW()
+    </update>
+    
+    
+    <select id="selectStatusByAudited" resultType="string">
+      
+             select recommender from t_xiao_jian_ren_consumption_log where 
+             id IN 
+          <foreach collection="ids" index="index" item="item" open="("
+          separator="," close=")">
+           #{item}
+        </foreach>
+        <![CDATA[
+        and issueDate <= NOW()
+        ]]>
+    </select>
+    
+  
+</mapper>
